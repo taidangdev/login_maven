@@ -219,7 +219,7 @@ Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE`
 
 ## 👥 Tác giả
 
-**Tên của bạn** - [GitHub](https://github.com/taidangdev)
+**Tên của bạn : Đặng Ngọc Tài** - [GitHub](https://github.com/taidangdev)
 
 ## 🙏 Lời cảm ơn
 
