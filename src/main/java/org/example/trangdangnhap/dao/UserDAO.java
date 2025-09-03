@@ -8,6 +8,14 @@ public interface UserDAO {
     User loginUser(String username, String password);
 
     boolean isUsernameExists(String username);
+    
+    boolean updatePassword(Long userId, String newPassword);
+    
+    boolean isEmailExists(String email);
+    
+    boolean updatePasswordByEmail(String email, String newPassword);
+    
+    User getUserByEmail(String email);
 }
 
 

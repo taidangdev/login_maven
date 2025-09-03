@@ -176,6 +176,24 @@
             font-size: 14px;
         }
 
+        .forgot-password-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .forgot-password-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password-link a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 20px;
@@ -224,6 +242,10 @@
         <a href="${pageContext.request.contextPath}/register" class="btn btn-secondary">
             Tạo tài khoản mới
         </a>
+        
+        <div class="forgot-password-link">
+            <a href="${pageContext.request.contextPath}/forgot-password">🔑 Quên mật khẩu?</a>
+        </div>
     </div>
 </body>
 </html>

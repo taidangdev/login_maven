@@ -23,12 +23,24 @@
 
 ## ✨ Tính năng
 
-### 🔐 Xác thực và Bảo mật
-- **Đăng ký tài khoản** với validation đầy đủ
-- **Đăng nhập** với xác thực an toàn
-- **Ghi nhớ đăng nhập** (Remember me)
-- **Quản lý session** bảo mật
-- **Đăng xuất** an toàn
+### **1. Authentication & Authorization**
+- ✅ Đăng ký tài khoản mới
+- ✅ Đăng nhập với validation
+- ✅ **Đổi mật khẩu** (yêu cầu đăng nhập) → **Tự động đăng xuất sau khi thành công**
+- ✅ Remember me functionality
+- ✅ Session management
+- ✅ Role-based access control
+- ✅ Secure logout
+
+### **2. Quản lý Category (Mới)**
+- ✅ **CRUD đầy đủ** cho Category
+- ✅ **Thêm category** mới với validation
+- ✅ **Sửa category** hiện có
+- ✅ **Xóa category** với xác nhận
+- ✅ **Xem danh sách** category theo user
+- ✅ **Bảo mật** - Chỉ user sở hữu mới được sửa/xóa
+- ✅ **Giao diện đơn giản** và dễ sử dụng
+- ✅ **Responsive design** cho mọi thiết bị
 
 ### 🎨 Giao diện người dùng
 - **Responsive design** - hoạt động tốt trên mọi thiết bị
@@ -51,6 +63,12 @@
 - **JSP (JavaServer Pages)** - Template engine
 - **JSTL** - JSP Standard Tag Library
 - **Maven** - Build tool và dependency management
+
+### Architecture
+- **MVC Pattern** - Model-View-Controller architecture
+- **DAO Pattern** - Data Access Object pattern
+- **Service Layer** - Business logic separation
+- **Session Management** - Secure user session handling
 
 ### Database
 - **Microsoft SQL Server** - Hệ quản trị cơ sở dữ liệu
@@ -83,7 +101,32 @@ cd trangdangnhap-trunk
 
 ### Bước 2: Cấu hình database
 1. Tạo database mới trong SQL Server
-2. Chạy script SQL để tạo bảng users
+2. Chạy script SQL để tạo bảng users và categories:
+
+```sql
+-- Tạo bảng User (nếu chưa có)
+CREATE TABLE [User] (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    username NVARCHAR(50) NOT NULL UNIQUE,
+    email NVARCHAR(100) NOT NULL UNIQUE,
+    password NVARCHAR(255) NOT NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE()
+);
+
+-- Tạo bảng Category
+CREATE TABLE Category (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    description NVARCHAR(500),
+    userId BIGINT NOT NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    
+    CONSTRAINT FK_Category_User FOREIGN KEY (userId) REFERENCES [User](id)
+);
+```
+
 3. Cập nhật thông tin kết nối trong `src/main/resources/database.properties`
 
 ### Bước 3: Build project
@@ -110,6 +153,14 @@ Mở trình duyệt và truy cập: `http://localhost:8080/trangdangnhap`
 
 ```
 trangdangnhap-trunk/
+├── images/                        # Screenshots và hình ảnh
+│   ├── admin_page.png            # Dashboard chính
+│   ├── category_page.png         # Danh sách category
+│   ├── add_category.png          # Form thêm category
+│   ├── change_password.png       # Form đổi mật khẩu
+│   ├── login.png                 # Form đăng nhập
+│   ├── register.png              # Form đăng ký
+│   └── landing-page.png          # Trang chủ
 ├── src/
 │   ├── main/
 │   │   ├── java/
@@ -125,7 +176,11 @@ trangdangnhap-trunk/
 │   │       │   ├── login.jsp      # Login page
 │   │       │   ├── register.jsp   # Registration page
 │   │       │   ├── home.jsp       # Dashboard
-│   │       │   └── dangnhap.jsp   # Alternative login
+│   │       │   ├── dangnhap.jsp   # Alternative login
+│   │       │   └── admin/         # Admin views
+│   │       │       ├── list-category.jsp    # Category listing
+│   │       │       ├── add-category.jsp     # Add category form
+│   │       │       └── edit-category.jsp    # Edit category form
 │   │       ├── WEB-INF/           # Web configuration
 │   │       └── index.jsp          # Landing page
 │   └── test/                      # Unit tests
@@ -141,11 +196,23 @@ trangdangnhap-trunk/
 - Call-to-action buttons
 - Responsive design
 
+![Landing Page](images/landing-page.png)
+
+### Dashboard (Trang chủ sau đăng nhập)
+- **Thông tin user** - Hiển thị username, email và trạng thái đăng nhập
+- **Feature cards** - 4 card chính: Bảo mật, Hiệu suất cao, Responsive, Quản lý Category
+- **Navigation** - Links đến các chức năng chính
+- **Logout** - Nút đăng xuất an toàn
+
+![Admin Dashboard](images/admin_page.png)
+
 ### Trang đăng nhập
 - Modern card design
 - Form validation
 - Remember me functionality
 - Error/success messages
+
+![Login Form](images/login.png)
 
 ### Trang đăng ký
 - User-friendly form
@@ -153,11 +220,33 @@ trangdangnhap-trunk/
 - Real-time validation
 - Smooth transitions
 
+![Register Form](images/register.png)
+
+### Trang đổi mật khẩu
+- **Form đổi mật khẩu** - Giao diện đơn giản và an toàn
+- **Validation** - Kiểm tra mật khẩu hiện tại và yêu cầu mật khẩu mới
+- **Yêu cầu bảo mật** - Mật khẩu mới phải đáp ứng các tiêu chuẩn bảo mật
+- **Tự động đăng xuất** - Sau khi đổi mật khẩu thành công, user sẽ được đăng xuất
+
+![Change Password Form](images/change_password.png)
+
 ### Dashboard
 - User information display
 - Navigation bar
 - Feature cards
 - Logout functionality
+
+### Quản lý Category
+- **Danh sách Category** - Hiển thị dạng bảng với thông tin chi tiết
+- **Form thêm mới** - Giao diện đơn giản với validation
+- **Form chỉnh sửa** - Cập nhật thông tin category
+- **Xác nhận xóa** - Dialog xác nhận trước khi xóa
+- **Phân quyền** - Chỉ user sở hữu mới được thao tác
+
+![Category List](images/category_page.png)
+
+#### Form thêm Category mới
+![Add Category Form](images/add_category.png)
 
 ## 🔧 Cấu hình
 
@@ -195,7 +284,21 @@ Cấu hình trong `src/main/webapp/WEB-INF/web.xml`:
 | `GET` | `/register` | Hiển thị form đăng ký |
 | `POST` | `/register` | Xử lý đăng ký |
 | `GET` | `/home` | Dashboard (yêu cầu đăng nhập) |
+| `GET` | `/change-password` | Trang đổi mật khẩu (yêu cầu đăng nhập) |
+| `POST` | `/change-password` | Xử lý đổi mật khẩu |
+| `GET` | `/forgot-password` | Trang quên mật khẩu |
+| `POST` | `/forgot-password` | Xử lý quên mật khẩu |
 | `GET` | `/logout` | Đăng xuất |
+
+### **Category Management Endpoints**
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| `GET` | `/admin/category/list` | Danh sách category (yêu cầu đăng nhập) |
+| `GET` | `/admin/category/add` | Form thêm category mới |
+| `POST` | `/admin/category/add` | Xử lý thêm category |
+| `GET` | `/admin/category/edit` | Form sửa category |
+| `POST` | `/admin/category/edit` | Xử lý cập nhật category |
+| `GET` | `/admin/category/delete` | Xóa category |
 
 ## 🤝 Đóng góp
 
@@ -220,6 +323,24 @@ Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE`
 ## 👥 Tác giả
 
 **Tên của bạn** - [GitHub](https://github.com/your-username)
+
+## 🆕 Tính năng mới (Latest Updates)
+
+### **Quản lý Category - Phiên bản 2.0**
+- ✨ **CRUD đầy đủ** cho Category với giao diện đơn giản
+- 🔒 **Bảo mật nâng cao** - Phân quyền theo user
+- 📱 **Responsive design** - Hoạt động tốt trên mọi thiết bị
+- 🎯 **Giao diện tối ưu** - Đơn giản, nhanh và dễ sử dụng
+- 🚀 **Hiệu suất cao** - Tối ưu hóa database queries
+- 🛡️ **Validation** - Kiểm tra dữ liệu đầu vào an toàn
+
+### **Cải tiến giao diện**
+- 🎨 **Dashboard mới** - 4 feature cards chính với giao diện hiện đại
+- 🔐 **Trang đổi mật khẩu** - Giao diện bảo mật với validation
+- 📊 **Quản lý Category** - Table view với actions và form CRUD
+- 🎯 **Navigation** - Điều hướng trực quan và dễ dàng
+- 📱 **Responsive Design** - Tối ưu cho mọi thiết bị
+- 🖼️ **Screenshots** - Hình ảnh minh họa đầy đủ các chức năng
 
 ## 🙏 Lời cảm ơn
 

@@ -50,6 +50,12 @@
             gap: 20px;
         }
 
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         .user-info {
             text-align: right;
         }
@@ -253,9 +259,14 @@
                             <div class="user-name">${sessionScope.currentUser.username}</div>
                             <div class="user-email">${sessionScope.currentUser.email}</div>
                         </div>
-                        <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger">
-                            Đăng xuất
-                        </a>
+                        <div class="nav-actions">
+                            <a href="${pageContext.request.contextPath}/change-password" class="btn btn-secondary">
+                                🔐 Đổi mật khẩu
+                            </a>
+                            <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger">
+                                Đăng xuất
+                            </a>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -308,6 +319,22 @@
                             Giao diện thích ứng hoàn hảo trên mọi thiết bị, 
                             từ máy tính đến điện thoại di động.
                         </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <h3 class="feature-title">Quản lý Category</h3>
+                        <p class="feature-description">
+                            Quản lý các danh mục của bạn một cách dễ dàng và hiệu quả.
+                            Tạo, sửa, xóa category theo ý muốn.
+                        </p>
+                        <div style="margin-top: 15px;">
+                            <a href="${pageContext.request.contextPath}/admin/category/list" 
+                               class="btn" 
+                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 16px; font-size: 12px;">
+                                🚀 Quản lý Category
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

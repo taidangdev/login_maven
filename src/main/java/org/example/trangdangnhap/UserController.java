@@ -12,7 +12,7 @@ import org.example.trangdangnhap.service.impl.UserServiceImpl;
 
 import java.io.IOException;
 
-@WebServlet(name = "userController", urlPatterns = {"/login", "/register", "/logout", "/home"})
+@WebServlet(name = "userController", urlPatterns = {"/login", "/register", "/logout", "/home", "/change-password", "/forgot-password"})
 public class UserController extends HttpServlet {
     private final UserService userService = new UserServiceImpl();
 
@@ -50,6 +50,16 @@ public class UserController extends HttpServlet {
                 }
                 req.getRequestDispatcher("/Views/home.jsp").forward(req, resp);
                 break;
+            case "/change-password":
+                if (req.getSession(false) == null || req.getSession(false).getAttribute("currentUser") == null) {
+                    resp.sendRedirect(req.getContextPath() + "/login");
+                    return;
+                }
+                req.getRequestDispatcher("/Views/change-password.jsp").forward(req, resp);
+                break;
+            case "/forgot-password":
+                req.getRequestDispatcher("/Views/forgot-password.jsp").forward(req, resp);
+                break;
             default:
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -62,6 +72,10 @@ public class UserController extends HttpServlet {
             doLogin(req, resp);
         } else if ("/register".equals(path)) {
             doRegister(req, resp);
+        } else if ("/change-password".equals(path)) {
+            doChangePassword(req, resp);
+        } else if ("/forgot-password".equals(path)) {
+            doForgotPassword(req, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         }
@@ -114,6 +128,87 @@ public class UserController extends HttpServlet {
             req.setAttribute("error", "Sai tên đăng nhập hoặc mật khẩu");
             req.getRequestDispatcher("/Views/login.jsp").forward(req, resp);
         }
+    }
+
+    private void doChangePassword(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        String currentPassword = req.getParameter("currentPassword");
+        String newPassword = req.getParameter("newPassword");
+        String confirmPassword = req.getParameter("confirmPassword");
+        
+        // Lấy user từ session
+        HttpSession session = req.getSession(false);
+        User currentUser = (User) session.getAttribute("currentUser");
+        
+        // Validation
+        if (isNullOrEmpty(currentPassword) || isNullOrEmpty(newPassword) || isNullOrEmpty(confirmPassword)) {
+            req.setAttribute("error", "Vui lòng điền đầy đủ thông tin");
+            req.getRequestDispatcher("/Views/change-password.jsp").forward(req, resp);
+            return;
+        }
+        
+        // Kiểm tra mật khẩu mới và xác nhận có giống nhau không
+        if (!newPassword.equals(confirmPassword)) {
+            req.setAttribute("error", "Mật khẩu mới và xác nhận mật khẩu không giống nhau");
+            req.getRequestDispatcher("/Views/change-password.jsp").forward(req, resp);
+            return;
+        }
+        
+        // Kiểm tra mật khẩu hiện tại có đúng không
+        User user = userService.login(currentUser.getUsername(), currentPassword);
+        if (user == null) {
+            req.setAttribute("error", "Mật khẩu hiện tại không đúng");
+            req.getRequestDispatcher("/Views/change-password.jsp").forward(req, resp);
+            return;
+        }
+        
+        // Thực hiện đổi mật khẩu
+        boolean success = userService.changePassword(currentUser.getId(), currentPassword, newPassword);
+        if (success) {
+            // Đổi mật khẩu thành công - đăng xuất user và chuyển về trang chủ
+            session.invalidate(); // Xóa session
+            clearRememberCookie(req, resp); // Xóa remember cookie
+            
+            // Redirect về trang chủ (landing page) với thông báo thành công
+            resp.sendRedirect(req.getContextPath() + "/?message=password_changed");
+        } else {
+            req.setAttribute("error", "Đổi mật khẩu thất bại. Vui lòng thử lại");
+            req.getRequestDispatcher("/Views/change-password.jsp").forward(req, resp);
+        }
+    }
+
+    private void doForgotPassword(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        String email = req.getParameter("email");
+        String newPassword = req.getParameter("newPassword");
+        String confirmPassword = req.getParameter("confirmPassword");
+        
+        // Validation
+        if (isNullOrEmpty(email) || isNullOrEmpty(newPassword) || isNullOrEmpty(confirmPassword)) {
+            req.setAttribute("error", "Vui lòng điền đầy đủ thông tin");
+            req.getRequestDispatcher("/Views/forgot-password.jsp").forward(req, resp);
+            return;
+        }
+        
+        // Kiểm tra mật khẩu mới và xác nhận có giống nhau không
+        if (!newPassword.equals(confirmPassword)) {
+            req.setAttribute("error", "Mật khẩu mới và xác nhận mật khẩu không giống nhau");
+            req.getRequestDispatcher("/Views/forgot-password.jsp").forward(req, resp);
+            return;
+        }
+        
+        // Thực hiện quên mật khẩu
+        boolean success = userService.forgotPassword(email, newPassword);
+        if (success) {
+            // Quên mật khẩu thành công - chuyển về trang đăng nhập với thông báo
+            req.setAttribute("message", "Mật khẩu đã được thay đổi thành công! Vui lòng đăng nhập với mật khẩu mới.");
+            req.getRequestDispatcher("/Views/login.jsp").forward(req, resp);
+        } else {
+            req.setAttribute("error", "Email không tồn tại trong hệ thống hoặc có lỗi xảy ra. Vui lòng thử lại");
+            req.getRequestDispatcher("/Views/forgot-password.jsp").forward(req, resp);
+        }
+    }
+    
+    private boolean isNullOrEmpty(String s) {
+        return s == null || s.trim().isEmpty();
     }
 
     private void setRememberCookie(HttpServletResponse resp, User user) {

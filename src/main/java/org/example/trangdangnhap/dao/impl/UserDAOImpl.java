@@ -14,6 +14,10 @@ public class UserDAOImpl implements UserDAO {
     private static final String SQL_INSERT = "INSERT INTO [User] (username, password, email) VALUES (?, ?, ?)";
     private static final String SQL_SELECT_LOGIN = "SELECT TOP 1 * FROM [User] WHERE username = ? AND password = ?";
     private static final String SQL_CHECK_EXISTS = "SELECT TOP 1 1 FROM [User] WHERE username = ?";
+    private static final String SQL_UPDATE_PASSWORD = "UPDATE [User] SET password = ? WHERE id = ?";
+    private static final String SQL_CHECK_EMAIL_EXISTS = "SELECT TOP 1 1 FROM [User] WHERE email = ?";
+    private static final String SQL_UPDATE_PASSWORD_BY_EMAIL = "UPDATE [User] SET password = ? WHERE email = ?";
+    private static final String SQL_SELECT_BY_EMAIL = "SELECT TOP 1 * FROM [User] WHERE email = ?";
 
     @Override
     public boolean registerUser(User user) {
@@ -81,6 +85,80 @@ public class UserDAOImpl implements UserDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    @Override
+    public boolean updatePassword(Long userId, String newPassword) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SQL_UPDATE_PASSWORD)) {
+            statement.setString(1, newPassword);
+            statement.setLong(2, userId);
+
+            int affected = statement.executeUpdate();
+            return affected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isEmailExists(String email) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SQL_CHECK_EMAIL_EXISTS)) {
+            statement.setString(1, email);
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updatePasswordByEmail(String email, String newPassword) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SQL_UPDATE_PASSWORD_BY_EMAIL)) {
+            statement.setString(1, newPassword);
+            statement.setString(2, email);
+
+            int affected = statement.executeUpdate();
+            return affected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SQL_SELECT_BY_EMAIL)) {
+            statement.setString(1, email);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getLong("id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setEmail(rs.getString("email"));
+                    try {
+                        int role = rs.getInt("roleId");
+                        if (!rs.wasNull()) {
+                            user.setRoleId(role);
+                        }
+                    } catch (SQLException ignore) {
+                    }
+                    return user;
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

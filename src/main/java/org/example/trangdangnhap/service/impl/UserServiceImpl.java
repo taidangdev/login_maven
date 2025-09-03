@@ -42,6 +42,47 @@ public class UserServiceImpl implements UserService {
         return userDAO.loginUser(username, hashed);
     }
 
+    @Override
+    public boolean changePassword(Long userId, String currentPassword, String newPassword) {
+        if (userId == null || isNullOrEmpty(currentPassword) || isNullOrEmpty(newPassword)) {
+            return false;
+        }
+        
+        // Kiểm tra mật khẩu mới có đủ mạnh không
+        if (!isStrongPassword(newPassword)) {
+            return false;
+        }
+        
+        // Hash mật khẩu mới
+        String hashedNewPassword = hashPassword(newPassword);
+        
+        // Cập nhật mật khẩu trong database
+        return userDAO.updatePassword(userId, hashedNewPassword);
+    }
+
+    @Override
+    public boolean forgotPassword(String email, String newPassword) {
+        if (isNullOrEmpty(email) || isNullOrEmpty(newPassword)) {
+            return false;
+        }
+        
+        // Kiểm tra email có tồn tại trong database không
+        if (!userDAO.isEmailExists(email)) {
+            return false;
+        }
+        
+        // Kiểm tra mật khẩu mới có đủ mạnh không
+        if (!isStrongPassword(newPassword)) {
+            return false;
+        }
+        
+        // Hash mật khẩu mới
+        String hashedNewPassword = hashPassword(newPassword);
+        
+        // Cập nhật mật khẩu theo email
+        return userDAO.updatePasswordByEmail(email, hashedNewPassword);
+    }
+
     private boolean isNullOrEmpty(String s) {
         return s == null || s.trim().isEmpty();
     }
@@ -56,17 +97,18 @@ public class UserServiceImpl implements UserService {
     }
 
     private String hashPassword(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not supported", e);
-        }
+//        try {
+//            MessageDigest md = MessageDigest.getInstance("SHA-256");
+//            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
+//            StringBuilder sb = new StringBuilder();
+//            for (byte b : hash) {
+//                sb.append(String.format("%02x", b));
+//            }
+//            return sb.toString();
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new IllegalStateException("SHA-256 not supported", e);
+//        }
+        return input;
     }
 }
 

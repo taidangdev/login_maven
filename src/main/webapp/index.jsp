@@ -149,6 +149,25 @@
             transform: translateY(-3px);
         }
 
+        .success-message {
+            margin-bottom: 30px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            box-shadow: 0 2px 10px rgba(40, 167, 69, 0.1);
+        }
+
         .footer {
             text-align: center;
             padding: 20px;
@@ -195,6 +214,13 @@
                 Đăng nhập hoặc đăng ký để bắt đầu trải nghiệm.
             </p>
 
+            <!-- Thông báo đổi mật khẩu thành công -->
+            <div id="successMessage" class="success-message" style="display: none;">
+                <div class="alert alert-success">
+                    <strong>🎉 Thành công!</strong> Mật khẩu đã được thay đổi. Vui lòng đăng nhập lại với mật khẩu mới.
+                </div>
+            </div>
+
             <div class="features-list">
                 <div class="feature-item">
                     <div class="feature-icon">🔐</div>
@@ -220,5 +246,30 @@
     <div class="footer">
         <p>&copy; 2024 Hệ thống quản lý. Được phát triển với ❤️</p>
     </div>
+
+    <script>
+        // Kiểm tra URL parameter để hiển thị thông báo đổi mật khẩu thành công
+        function showSuccessMessage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            
+            if (message === 'password_changed') {
+                const successMessage = document.getElementById('successMessage');
+                if (successMessage) {
+                    successMessage.style.display = 'block';
+                    
+                    // Tự động ẩn thông báo sau 8 giây
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                        // Xóa parameter khỏi URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }, 8000);
+                }
+            }
+        }
+
+        // Chạy khi trang load
+        document.addEventListener('DOMContentLoaded', showSuccessMessage);
+    </script>
 </body>
 </html>
